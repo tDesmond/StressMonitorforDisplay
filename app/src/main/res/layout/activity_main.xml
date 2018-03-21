@@ -75,27 +75,28 @@
         android:id="@+id/hrTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:text="Heart Rate"
         android:textAlignment="center"
         android:textColor="@color/colorAccent"
-        app:layout_constraintBottom_toTopOf="@+id/hrTV"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/hrUnitTV"
         app:layout_constraintEnd_toEndOf="@+id/hrTV"
+        app:layout_constraintHorizontal_bias="0.484"
         app:layout_constraintStart_toStartOf="@+id/hrTV" />
 
     <TextView
         android:id="@+id/ibiTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:text="IBI"
         android:textAlignment="center"
         android:textColor="@color/colorAccent"
-        app:layout_constraintBottom_toTopOf="@+id/hrTV"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/ibiUnitTV"
         app:layout_constraintEnd_toEndOf="@+id/ibiTV"
         app:layout_constraintStart_toStartOf="@+id/ibiTV" />
 
@@ -103,27 +104,69 @@
         android:id="@+id/edaTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:text="EDA"
         android:textAlignment="center"
         android:textColor="@color/colorAccent"
-        app:layout_constraintBottom_toTopOf="@+id/edaTV"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/edaUnitTv"
         app:layout_constraintEnd_toEndOf="@+id/edaTV"
         app:layout_constraintStart_toStartOf="@+id/edaTV" />
 
     <TextView
         android:id="@+id/stressIndicatorTV"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/ibiTitle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/hrUnitTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:text="(Bpm)"
+        android:textColor="@color/colorAccent"
+        android:textSize="12sp"
+        android:textStyle="italic"
+        app:layout_constraintBottom_toTopOf="@+id/hrTV"
+        app:layout_constraintEnd_toEndOf="@+id/hrTV"
+        app:layout_constraintStart_toStartOf="@+id/hrTV" />
+
+    <TextView
+        android:id="@+id/ibiUnitTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="(ms)"
+        android:textColor="@color/colorAccent"
+        android:textSize="12sp"
+        android:textStyle="italic"
+        app:layout_constraintBottom_toTopOf="@+id/ibiTV"
+        app:layout_constraintEnd_toEndOf="@+id/ibiTV"
+        app:layout_constraintStart_toStartOf="@+id/ibiTV" />
+
+    <TextView
+        android:id="@+id/edaUnitTv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="(uS)"
+        android:textColor="@color/colorAccent"
+        android:textSize="12sp"
+        android:textStyle="italic"
+        app:layout_constraintBottom_toTopOf="@+id/edaTV"
+        app:layout_constraintEnd_toEndOf="@+id/edaTV"
+        app:layout_constraintStart_toStartOf="@+id/edaTV" />
 
 </android.support.constraint.ConstraintLayout>

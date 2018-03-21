@@ -50,6 +50,13 @@ public class MainActivity extends AppCompatActivity {
     private String ibiVarienceString;
     private String hrvString;
     private String pNN50String;
+    private String tonicSlopeStinge;
+    private String phasicSlopeString;
+    private String estimationString;
+    private String stressMonitorText;
+    private TextView ibiUnitsText;
+    private TextView edaUnitsText;
+    private TextView hrUnitsText;
     private float edaStd;
     private float hrStd;
     private float currentEda;
@@ -82,12 +89,18 @@ public class MainActivity extends AppCompatActivity {
     private boolean pNN50Show = false;
     private boolean bvpGraphShow = true;
     private boolean edaGraphShow = false;
+    private boolean stressed = false;
     private TextView heartRateTextView;
     private TextView edaTextView;
     private TextView heartRateTitle;
     private TextView ibiTextView;
     private TextView edaTitle;
     private TextView ibiTitle;
+    private TextView stressIndicatorDsiplay;
+    private String[] svmData;
+    private double[] coefficients;
+    private double intercepts;
+
 
 
 
@@ -107,7 +120,10 @@ public class MainActivity extends AppCompatActivity {
         ibiTextView = (TextView) findViewById(R.id.ibiTV);
         ibiTitle = (TextView) findViewById(R.id.ibiTitle);
         edaTitle = (TextView) findViewById(R.id.edaTitle);
-
+        stressIndicatorDsiplay = (TextView) findViewById(R.id.stressIndicatorTV);
+        ibiUnitsText = (TextView) findViewById(R.id.ibiUnitTV);
+        edaUnitsText = (TextView) findViewById(R.id.edaUnitTv);
+        hrUnitsText = (TextView) findViewById(R.id.hrUnitTV);
         bvpSeries = new LineGraphSeries<DataPoint>();
         graph = (GraphView) findViewById(R.id.graph);
         graph.addSeries(bvpSeries);
@@ -121,7 +137,6 @@ public class MainActivity extends AppCompatActivity {
         graph.setTitle("BVP");
         graph.setTitleTextSize(100);
         graph.setTitleColor(Color.WHITE);
-
 
         readCSVdata();
     }
@@ -211,10 +226,10 @@ public class MainActivity extends AppCompatActivity {
                             public void run() {
 //                                  Log.d("UIThread:  ", "Gc: " + bvpSample.getCol_1() + "Time: " +currentTime);
 
-                                    bvpSeries.appendData(new DataPoint(currentTime, bvpSample.getCol_1()), true, 512);
-                                    bvpSeries.setDrawBackground(true);
-                                    bvpSeries.setAnimated(true);
-                                    bvpSeries.setColor(Color.WHITE);
+                                bvpSeries.appendData(new DataPoint(currentTime, bvpSample.getCol_1()), true, 512);
+                                bvpSeries.setDrawBackground(true);
+                                bvpSeries.setAnimated(true);
+                                bvpSeries.setColor(Color.WHITE);
 
 
                             }
@@ -299,10 +314,12 @@ public class MainActivity extends AppCompatActivity {
                     edaAvgString = String.format("%.3f", edaAvg);
                     edaStdString = String.format("%.3f", edaStd);
                     ibiAvgString = String.format("%.3f", ibiAvg);
-                    hrAvgString = String.format("%.1f", hrAvg);
+                    hrAvgString = String.format("%.2f", hrAvg);
                     ibiVarienceString = String.format("%.3f", ibiStd);
-                    hrvString = String.format("%.1f", hrStd);
-                    pNN50String = String.format("%.1f", pNN50);
+                    hrvString = String.format("%.2f", hrStd);
+                    pNN50String = String.format("%.2f", pNN50);
+                    tonicSlopeStinge = Float.toString(tonicSlope);
+                    phasicSlopeString = Float.toString(phasicSlope);
                     Log.d("STD: ", " " + edaStd);
 
                 }
@@ -314,31 +331,37 @@ public class MainActivity extends AppCompatActivity {
                             heartRateTitle.setText("Heart Rate");
 
                         }else if(hrStd != 0 && hrvShow) {
-                                heartRateTextView.setText(hrvString);
-                                heartRateTitle.setText("HRV");
-                            }
+                            heartRateTextView.setText(hrvString);
+                            heartRateTitle.setText("HRV");
+                        }
 
                         if(ibiAvg != 0 && ibiShow) {
                             ibiTextView.setText(ibiAvgString);
                             ibiTitle.setText("IBI");
+                            ibiUnitsText.setText("(s)");
                         }else if(ibiAvg != 0 && ibiVarienceShow) {
-                                ibiTextView.setText(ibiVarienceString);
-                                ibiTitle.setText("IBI Std.");
-                            }else if(pNN50Show) {
-                                    ibiTextView.setText(pNN50String);
-                                    ibiTitle.setText("pNN50");
-                                }
+                            ibiTextView.setText(ibiVarienceString);
+                            ibiTitle.setText("IBI Std.");
+                        }else if(pNN50Show) {
+                            ibiTextView.setText(pNN50String);
+                            ibiTitle.setText("pNN50");
+                            ibiUnitsText.setText("(%)");
+                        }
 
                         if(edaAvg != 0 && edaShow) {
                             edaTextView.setText(edaAvgString);
                             edaTitle.setText("EDA");
                         }else if(edaStd != 0 && edaStdShow) {
-                                edaTextView.setText(edaStdString);
-                                edaTitle.setText("EDA Std.");
-                            }
+                            edaTextView.setText(edaStdString);
+                            edaTitle.setText("EDA Std.");
+                        }
 
                     }
                 });
+                svmData = new String[]{ibiAvgString, hrAvgString, pNN50String,
+                        edaAvgString, edaStdString, tonicSlopeStinge, phasicSlopeString};
+                svmClassifier(svmData);
+
             }
         }).start();
 
@@ -387,16 +410,16 @@ public class MainActivity extends AppCompatActivity {
             ibiTextView.setText(" ");
             ibiTitle.setText("IBI");
         }else if (ibiVarienceShow){
-                pNN50Show = true;
-                ibiVarienceShow = false;
-                ibiTextView.setText(" ");
-                ibiTitle.setText("IBI Std.");
-            }else if (pNN50Show){
-                    ibiShow = true;
-                    pNN50Show = false;
-                    ibiTextView.setText(" ");
-                    ibiTitle.setText("pNN50");
-                }
+            pNN50Show = true;
+            ibiVarienceShow = false;
+            ibiTextView.setText(" ");
+            ibiTitle.setText("IBI Std.");
+        }else if (pNN50Show){
+            ibiShow = true;
+            pNN50Show = false;
+            ibiTextView.setText(" ");
+            ibiTitle.setText("pNN50");
+        }
     }
 
     public void edaViewSwitch(View view){
@@ -417,18 +440,70 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (bvpGraphShow) {
-                    bvpGraphShow = false;
-                    edaGraphShow = true;
-                    graph.removeAllSeries();
-                } else if (edaGraphShow) {
-                    bvpGraphShow = true;
-                    edaGraphShow = false;
-                    graph.removeAllSeries();
-                }
+//                if (bvpGraphShow) {
+//                    bvpGraphShow = false;
+//                    edaGraphShow = true;
+//                    graph.removeAllSeries();
+//                } else if (edaGraphShow) {
+//                    bvpGraphShow = true;
+//                    edaGraphShow = false;
+//                    graph.removeAllSeries();
+//                }
             }
         });
 
     }
+
+    public int predict(double[] features) {
+        double prob = 0.;
+        for (int i = 0, il = this.coefficients.length; i < il; i++) {
+            prob += this.coefficients[i] * features[i];
+        }
+        if (prob + this.intercepts > 0) {
+            return 1;
+        }
+        return 0;
+    }
+
+    public void svmClassifier(String[] args) {
+        if (args.length == 7) {
+
+            // Features:
+            double[] features = new double[args.length];
+            for (int i = 0, l = args.length; i < l; i++) {
+                features[i] = Double.parseDouble(args[i]);
+            }
+
+            // Parameters:
+            double[] coefficients = {-1.36738488082, -17.6755236949, 0.0336051987855, -1.03336182252, -0.277909744711, 0.46407919792, -2.39928849844};
+            double intercepts = 2.55030905175;
+
+            // Prediction:
+            LinearSVC clf = new LinearSVC(coefficients, intercepts);
+            final int estimation = clf.predict(features);
+//            System.out.println(estimation);
+            Log.d("Result: ", " " + estimation);
+
+            estimationString = Integer.toString(estimation);
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (estimation==1){
+                        stressMonitorText = "Stress Detected";
+                        stressIndicatorDsiplay.setBackgroundResource(R.drawable.stressed_background);
+                        stressed=true;
+                    }else{
+                        stressMonitorText = "No Stress detected";
+                        stressIndicatorDsiplay.setBackgroundResource(R.drawable.relaxed_background);
+                        stressed=false;
+                    }
+                    stressIndicatorDsiplay.setText(stressMonitorText);
+                }
+            });
+
+        }
+    }
+
 
 }
