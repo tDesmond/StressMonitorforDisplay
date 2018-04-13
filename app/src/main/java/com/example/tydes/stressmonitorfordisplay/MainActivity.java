@@ -10,7 +10,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.jjoe64.graphview.GraphView;
@@ -358,8 +357,10 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 });
-                svmData = new String[]{ibiAvgString, hrAvgString, pNN50String,
+                svmData = new String[]{ibiAvgString, ibiVarienceString, pNN50String,
                         edaAvgString, edaStdString, tonicSlopeStinge, phasicSlopeString};
+//                svmData = new String[]{"0.517396825", "0.028052977", "6.451612903", "1.139908333", "0.058088581", "0", "0"};
+
                 svmClassifier(svmData);
 
             }
@@ -475,8 +476,13 @@ public class MainActivity extends AppCompatActivity {
             }
 
             // Parameters:
-            double[] coefficients = {-1.36738488082, -17.6755236949, 0.0336051987855, -1.03336182252, -0.277909744711, 0.46407919792, -2.39928849844};
-            double intercepts = 2.55030905175;
+//            double[] coefficients = {-1.36738488082, -17.6755236949, 0.0336051987855, -1.03336182252, -0.277909744711, 0.46407919792, -2.39928849844};
+//            double intercepts = 2.55030905175;
+//            double[] coefficients = {1.25705438351, 0.479368017079, 0.00558641889707, 1.33439600244, -0.344226352829, -0.488332775586, 2.09159849548};
+//            double intercepts = -2.86943398256;
+            double[] coefficients = {4.46556575459, -4.46593776833, 0.00288702791778, 1.16625631036, 1.98910956778, 2.48670995174, 1.15357577775};
+            double intercepts = -4.55439333174;
+
 
             // Prediction:
             LinearSVC clf = new LinearSVC(coefficients, intercepts);
