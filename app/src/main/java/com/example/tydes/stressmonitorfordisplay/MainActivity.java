@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "Debug_MA";
@@ -107,6 +108,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        //Connect to all of the xml layout components
         ibi60sSample = new ArrayList<Float>();
         bvp60sSample = new ArrayList<Float>();
         eda60sSample = new ArrayList<Float>();
@@ -123,6 +127,8 @@ public class MainActivity extends AppCompatActivity {
         ibiUnitsText = (TextView) findViewById(R.id.ibiUnitTV);
         edaUnitsText = (TextView) findViewById(R.id.edaUnitTv);
         hrUnitsText = (TextView) findViewById(R.id.hrUnitTV);
+
+        //Connect and Configure the graph
         bvpSeries = new LineGraphSeries<DataPoint>();
         graph = (GraphView) findViewById(R.id.graph);
         graph.addSeries(bvpSeries);
@@ -142,6 +148,8 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void readCSVdata() {
+
+        //Read the Data from a Csv file
         InputStream bvpIS = getResources().openRawResource(R.raw.bvp);
         final BufferedReader bvpReader = new BufferedReader(
                 new InputStreamReader(bvpIS ,Charset.forName("utf-8"))
@@ -162,6 +170,8 @@ public class MainActivity extends AppCompatActivity {
         edaLine="";
         ibiLine="";
 
+        //Begin a thread for csv reading
+        //In this thread the csv files are synchronised as they have different sample rates
         new Thread(new Runnable() {
             public void run() {
                 try {
@@ -178,11 +188,18 @@ public class MainActivity extends AppCompatActivity {
                         syncBvpEda ++;
                         currentTime = ((float) 1/64) * loopCount;
 
+                        //delay 16ms to achieve sample rate close to 64Hz
                         Thread.sleep(16);
+
+                        //Split the csv ","
                         String [] tokenBVP = bvpLine.split(",");
                         bvpSample.setCol_1(Float.parseFloat(tokenBVP[0]));
+
+                        //Print bvp to log to ensure no error
                         Log.d(TAG, "BVP: " +  bvpSample.getCol_1() + " " + currentTime);
 
+                        //Only get the IBI when its time scale matches the time scale of the bvp
+                        //Puts the IBI in a stCol placeholder
                         if (getIBI){
                             if ((ibiLine = ibiReader.readLine()) != null) {
                                 String [] tokenIbi = ibiLine.split(",");
@@ -192,6 +209,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                         }
 
+                        //Checking if we read the ibi and put it in the set_col1
                         if (ibiSample.getCol_1() != 0){
                             if (ibiSample.getCol_1()<=currentTime){
                                 Log.d("Reader", "IBI: " + ibiSample.getCol_1() + " At time: " + ibiSample.getCol_2());
@@ -205,6 +223,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                         }
 
+                        //Only pull data from the eda when its time scale matched the bvp
                         if(syncBvpEda==16 ){
                             if((edaLine = edaReader.readLine()) != null ) {
                                 String[] tokenEDA = edaLine.split(",");
@@ -224,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void run() {
 //                                  Log.d("UIThread:  ", "Gc: " + bvpSample.getCol_1() + "Time: " +currentTime);
-
+                                //Update the plot with the bvp data
                                 bvpSeries.appendData(new DataPoint(currentTime, bvpSample.getCol_1()), true, 512);
                                 bvpSeries.setDrawBackground(true);
                                 bvpSeries.setAnimated(true);
@@ -234,10 +253,10 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });
 
+                        //Run calculation of statistical features if the time sample is at least greater than 15 seconds
                         if(currentTime%1.5 == 0 && currentTime > 15) {
                             calcStatisticalFeatures(eda60sSample, edaTimeSample, ibi60sSample, ibiTimeSample);
                         }
-
 
                         loopCount++;
                     }
@@ -279,6 +298,8 @@ public class MainActivity extends AppCompatActivity {
                     hrAvg = Math.round(((float) 60/ibiAvg) * 10);
                     hrAvg = hrAvg/10;
                 }
+
+
                 if(edaSampleSize>0) {
                     edaTonicLinReg = new linearRegression(edaTimeSample, eda60sSample);
                     tonicSlope = (float) edaTonicLinReg.slope();
@@ -310,6 +331,9 @@ public class MainActivity extends AppCompatActivity {
                     pNN50 = (nn50Count / (ibiSampleSize)) * 100;
                     hrStd = ibiStd * 60;
 
+                    //Fort mat the xml text to be a string
+                    //.3f limits the value to 3 decimal places
+                    //This was used becuase there an be problems in rounding float values
                     edaAvgString = String.format("%.3f", edaAvg);
                     edaStdString = String.format("%.3f", edaStd);
                     ibiAvgString = String.format("%.3f", ibiAvg);
@@ -322,6 +346,8 @@ public class MainActivity extends AppCompatActivity {
                     Log.d("STD: ", " " + edaStd);
 
                 }
+
+                //Update xml layout with the new data
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -357,6 +383,8 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 });
+
+                //Run classifier to detect stress
                 svmData = new String[]{ibiAvgString, ibiVarienceString, pNN50String,
                         edaAvgString, edaStdString, tonicSlopeStinge, phasicSlopeString};
 //                svmData = new String[]{"0.517396825", "0.028052977", "6.451612903", "1.139908333", "0.058088581", "0", "0"};

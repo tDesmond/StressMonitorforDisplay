@@ -14,6 +14,7 @@ public class LinearSVC {
         this.intercepts = intercepts;
     }
 
+    //Perform vector multiplication to predict the the stress levels
     public int predict(double[] features) {
         double prob = 0.;
         for (int i = 0, il = this.coefficients.length; i < il; i++) {
@@ -24,6 +25,7 @@ public class LinearSVC {
         }
         return 0;
     }
+
 
     public static void main(String[] args) {
         if (args.length == 7) {
@@ -41,8 +43,6 @@ public class LinearSVC {
             // Prediction:
             LinearSVC clf = new LinearSVC(coefficients, intercepts);
             int estimation = clf.predict(features);
-//            System.out.println(estimation);
-
         }
     }
 }

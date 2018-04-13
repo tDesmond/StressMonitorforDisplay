@@ -23,9 +23,12 @@ public class HomePageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_page);
 
+
+        //Connect to the xml button and set its text
         connectButton = (Button) findViewById(R.id.connectButton);
         connectButton.setText("Connect to Device");
 
+        //Detect if user presses the Button
         connectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -39,8 +42,6 @@ public class HomePageActivity extends AppCompatActivity {
                         startActivity(mainIntent);
                     }
                 }, 2500);   //5 seconds
-
-
             }
         });
 
